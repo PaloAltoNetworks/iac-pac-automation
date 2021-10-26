@@ -1,0 +1,15 @@
+code:
+  metadata:
+    name: "RDP Port Open"
+    guidelines: "This is a GCP firewall policy that finds assets with port 3389 open."
+    severity: "critical"
+    category: "networking"
+  scope:
+    provider: "gcp"
+  definition:
+        cond_type: "attribute"
+        resource_types:
+        - "google_compute_firewall"
+        attribute: "deny.ports"
+        operator: "equals"
+        value: "3389"
