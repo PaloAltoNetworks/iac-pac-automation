@@ -1,0 +1,102 @@
+name: Update Bridgecrew Policies
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push but only for the main branch
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - '.github/workflows/main.yml'
+    
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  policy_update:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+     
+      # Install jq and yq
+      - name: Install jq and yq
+        run: sudo snap install jq yq
+
+      # Get modified files (https://github.com/marketplace/actions/get-all-changed-files)
+      - name: Get Modified Files
+        id: files_modified
+        uses: jitterbit/get-changed-files@v1
+      
+      # Create policy
+      - name: Create Policy
+        if: ${{ steps.files_modified.outputs.added }}
+        run: |
+          for changed_file in ${{ steps.files_modified.outputs.added }}; do
+            data=$(yq e -o=json ${changed_file} | jq '.')
+            id=$(curl --request POST \
+                  --url https://www.bridgecrew.cloud/api/v1/policies \
+                  --header 'Accept: application/json' \
+                  --header 'Content-Type: application/json' \
+                  --header "authorization: ${{ secrets.BC_API_KEY }}" \
+                  --data "$data")
+            id=$(echo $id | cut -d '"' -f 2)
+            git mv ${changed_file} "$id.yml"
+            git config user.email "demo@panw.com"
+            git config user.name "${GITHUB_ACTOR}"
+            git commit -m "policy renamed to $id.yml"
+            git push
+          done
+      
+      # Update policy
+      - name: Update Policy
+        if: ${{ steps.files_modified.outputs.modified }}
+        run: |
+          for changed_file in ${{ steps.files_modified.outputs.modified }}; do
+            all_policies=$(curl --request GET \
+                           --url https://www.bridgecrew.cloud/api/v1/policies/table/data \
+                           --header 'Accept: application/json' \
+                           --header "authorization: ${{ secrets.BC_API_KEY }}")
+            total_policies=$(echo $all_policies | jq '.data | length')
+            deleted_policy=$(echo ${changed_file} | cut -d '.' -f 1)
+            
+            for ((t = 0 ; t < $total_policies ; t++)); do
+                policy=$(echo $all_policies | jq -r .data[$t].id)
+                if [[ "$deleted_policy" == "$policy" ]];
+                    then
+                        data=$(yq e -o=json ${changed_file} | jq '.')
+                        curl --request PUT \
+                            --url https://www.bridgecrew.cloud/api/v1/policies/$policy \
+                            --header 'Accept: application/json' \
+                            --header 'Content-Type: application/json' \
+                            --header "authorization: ${{ secrets.BC_API_KEY }}" \
+                            --data "$data"
+                            break
+                fi
+            done
+          done
+      
+      # Delete policy
+      - name: Delete Policy
+        if: ${{ steps.files_modified.outputs.removed }}
+        run: |
+          for changed_file in ${{ steps.files_modified.outputs.removed }}; do
+            all_policies=$(curl --request GET \
+                           --url https://www.bridgecrew.cloud/api/v1/policies/table/data \
+                           --header 'Accept: application/json' \
+                           --header "authorization: ${{ secrets.BC_API_KEY }}")
+            total_policies=$(echo $all_policies | jq '.data | length')
+            deleted_policy=$(echo ${changed_file} | cut -d '.' -f 1)
+            
+            for ((t = 0 ; t < $total_policies ; t++)); do
+                policy=$(echo $all_policies | jq -r .data[$t].id)
+                if [[ "$deleted_policy" == "$policy" ]];
+                    then
+                        curl --request DELETE \
+                            --url https://www.bridgecrew.cloud/api/v1/policies/$policy \
+                            --header 'Accept: application/json' \
+                            --header "authorization: ${{ secrets.BC_API_KEY }}"
+                            break
+                fi
+            done
+          done
