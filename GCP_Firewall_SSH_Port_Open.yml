@@ -1,6 +1,6 @@
 code:
   metadata:
-    name: "RDP Port Open"
+    name: "SSH Port Open"
     guidelines: "This is a GCP firewall policy that finds assets with port 3389 open."
     severity: "critical"
     category: "networking"
