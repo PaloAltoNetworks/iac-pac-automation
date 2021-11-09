@@ -41,7 +41,7 @@ jobs:
                   --header 'Content-Type: application/json' \
                   --header "authorization: ${{ secrets.BC_API_KEY }}" \
                   --data "$data")
-            id=$(echo $id | cut -d '"' -f 2)
+            id=$(echo $id | jq -r .policy)
             git mv ${changed_file} "$id.yml"
             git config user.email "demo@panw.com"
             git config user.name "${GITHUB_ACTOR}"
