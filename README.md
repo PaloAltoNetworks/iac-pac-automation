@@ -1,8 +1,8 @@
-# Policy-as-Code Automation with Bridgecrew and GitHub Actions
+# Policy-as-Code Automation with Prisma Cloud Code Security and GitHub Actions
 
-This GitHub Action runs whenever files change in the main branch. It automatically creates, updates or deletes a Bridgecrew custom policy or policies from your Bridgecrew console based on the file changes triggered by the main branch.
+This GitHub Action runs whenever files change in the pccs-demo branch. It automatically creates, updates or deletes a Prisma Cloud custom build policy or policies in your Prisma Cloud console based on the file changes triggered by this branch.
 
-This workflow is not ment for production use. Its goal is to provide a way to showcase how one can automate a custom policy lifecycle using Bridgecrew and GitHub Actions.
+This workflow is not ment for production use. Its goal is to provide a way to showcase how one can automate a custom policy lifecycle using Prisma Cloud Code Security and GitHub Actions.
 
 ## Table of Contents
 
@@ -11,16 +11,16 @@ This workflow is not ment for production use. Its goal is to provide a way to sh
 
 ## Requirements
 
-* Bridgecrew account
-* Bridgecrew API token
+* GitHub account
+* Prisma Cloud account
+* Prisma Cloud Access Key
 
 ## Getting started
 
 1. Fork this repo.
-2. Navigate to [Bridgecrew's website](https://bridgecrew.io/) and choose get started for free to create a trial account.
-3. Once in your Bridgecrew console, navigate to integrations and create an API token.
-4. Add the API token to your GitHub repo with the name BC_API_KEY (settings > secrets).
-5. Create a new policy (you can use the provided policy GCP_Firewall_RDP_Port_Open.yml or create your own policies).
-6. Push your changes to the main branch of the repo.
+2. If you don't have a Prisma Cloud access key, create one. In Prisma Cloud console, navigate to Settings > Access Control > Access Keys and create a key.
+3. Create two secrets in your repo: one called PCS_USER for your access key and one called PCS_PASS for your secret access key.
+4. Create a new policy (you can use the provided policies as a template or create your own policies).
+6. Push your changes to the pccs-demo branch of the repo.
 7. Check the actions tab.
-8. In your Bridgecrew console navigate to policies, add GCP to the providers list, add "Created by" and select your username.
+8. In your Prisma Cloud console, navigate to policies, and search for the policy name.
