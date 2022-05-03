@@ -1,0 +1,24 @@
+{
+    "cloudType": "aws",
+    "name": "AWS S3 Demo Policy",
+    "policySubTypes": [
+        "build"
+    ],
+    "policyType": "config",
+    "rule": {
+        "children": [
+            {
+                "criteria": "{\"category\":\"General\",\"resourceTypes\":[\"aws_s3_bucket\"],\"conditionQuery\":{\"attribute\":\"acl\",\"operator\":\"not_equals\",\"value\":\"log-delivery-write\",\"cond_type\":\"attribute\"}}",
+                "type": "build",
+                "recommendation": ""
+            }
+        ],
+        "name": "demo rule",
+        "parameters": {
+            "savedSearch": "false",
+            "withIac": "true"
+        },
+        "type": "Config"
+    },
+    "severity": "medium"
+} 
