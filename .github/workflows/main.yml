@@ -1,51 +1,57 @@
-name: Update Bridgecrew Policies
+name: Update Prisma Cloud Code Security Policies
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ pccs-demo ]
     paths-ignore:
     - '.github/workflows/main.yml'
     - '**/README.md'
-    
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
 
 jobs:
   policy_update:
     runs-on: ubuntu-latest
+    env:
+      console_address: https://api.prismacloud.io
+    
+    defaults:
+      run:
+        shell: bash
+          
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout Repo
         uses: actions/checkout@v2
-     
-      # Install jq and yq
-      - name: Install jq and yq
-        run: sudo snap install jq yq
 
       # Get modified files (https://github.com/marketplace/actions/get-all-changed-files)
       - name: Get Modified Files
         id: files_modified
         uses: jitterbit/get-changed-files@v1
+
+      - name: Get Prisma Cloud Token
+        id: prisma
+        run: |
+          AUTH_TOKEN=$(curl -skH "Content-Type: application/json" \
+              -d '{"username":"${{ secrets.PCS_USER }}", "password":"${{ secrets.PCS_PASS }}"}' \
+              $console_address/login | jq -r .token)
+          echo "::set-output name=token::$AUTH_TOKEN"
       
       # Create policy
       - name: Create Policy
         if: ${{ steps.files_modified.outputs.added }}
         run: |
           for changed_file in ${{ steps.files_modified.outputs.added }}; do
-            data=$(yq e -o=json ${changed_file} | jq '.')
+            data=$(cat ${changed_file})         
             id=$(curl --request POST \
-                  --url https://www.bridgecrew.cloud/api/v1/policies \
-                  --header 'Accept: application/json' \
+                  --url $console_address/policy \
                   --header 'Content-Type: application/json' \
-                  --header "authorization: ${{ secrets.BC_API_KEY }}" \
-                  --data "$data")
-            id=$(echo $id | jq -r .policy)
-            git mv ${changed_file} "$id.yml"
+                  --header "Authorization: Bearer ${{ steps.prisma.outputs.token }}" \
+                  --data "$data" | jq -r .policyId)
+            git mv ${changed_file} "$id.json"
             git config user.email "demo@panw.com"
             git config user.name "${GITHUB_ACTOR}"
-            git commit -m "policy renamed to $id.yml"
+            git commit -m "policy renamed to $id.json"
             git push
           done
       
@@ -54,27 +60,14 @@ jobs:
         if: ${{ steps.files_modified.outputs.modified }}
         run: |
           for changed_file in ${{ steps.files_modified.outputs.modified }}; do
-            all_policies=$(curl --request GET \
-                           --url https://www.bridgecrew.cloud/api/v1/policies/table/data \
-                           --header 'Accept: application/json' \
-                           --header "authorization: ${{ secrets.BC_API_KEY }}")
-            total_policies=$(echo $all_policies | jq '.data | length')
-            deleted_policy=$(echo ${changed_file} | cut -d '.' -f 1)
-            
-            for ((t = 0 ; t < $total_policies ; t++)); do
-                policy=$(echo $all_policies | jq -r .data[$t].id)
-                if [[ "$deleted_policy" == "$policy" ]];
-                    then
-                        data=$(yq e -o=json ${changed_file} | jq '.')
-                        curl --request PUT \
-                            --url https://www.bridgecrew.cloud/api/v1/policies/$policy \
-                            --header 'Accept: application/json' \
-                            --header 'Content-Type: application/json' \
-                            --header "authorization: ${{ secrets.BC_API_KEY }}" \
-                            --data "$data"
-                            break
-                fi
-            done
+            policy=$(echo ${changed_file} | cut -d '.' -f 1)
+            data=$(cat ${changed_file})
+            curl --request PUT \
+                --url $console_address/policy/$policy \
+                --header 'Accept: application/json' \
+                --header 'Content-Type: application/json' \
+                --header "Authorization: Bearer ${{ steps.prisma.outputs.token }}" \
+                --data "$data"
           done
       
       # Delete policy
@@ -82,22 +75,9 @@ jobs:
         if: ${{ steps.files_modified.outputs.removed }}
         run: |
           for changed_file in ${{ steps.files_modified.outputs.removed }}; do
-            all_policies=$(curl --request GET \
-                           --url https://www.bridgecrew.cloud/api/v1/policies/table/data \
-                           --header 'Accept: application/json' \
-                           --header "authorization: ${{ secrets.BC_API_KEY }}")
-            total_policies=$(echo $all_policies | jq '.data | length')
             deleted_policy=$(echo ${changed_file} | cut -d '.' -f 1)
-            
-            for ((t = 0 ; t < $total_policies ; t++)); do
-                policy=$(echo $all_policies | jq -r .data[$t].id)
-                if [[ "$deleted_policy" == "$policy" ]];
-                    then
-                        curl --request DELETE \
-                            --url https://www.bridgecrew.cloud/api/v1/policies/$policy \
-                            --header 'Accept: application/json' \
-                            --header "authorization: ${{ secrets.BC_API_KEY }}"
-                            break
-                fi
-            done
+            curl --request DELETE \
+                --url $console_address/policy/$deleted_policy \
+                --header 'Accept: application/json' \
+                --header "Authorization: Bearer ${{ steps.prisma.outputs.token }}"
           done
