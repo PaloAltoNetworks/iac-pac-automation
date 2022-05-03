@@ -1,0 +1,24 @@
+{
+	"cloudType": "gcp",
+	"complianceMetadata": [],
+	"description": "Custom GCP Policy",
+	"labels": [],
+	"name": "Custom GCP Policy",
+	"policySubTypes": ["build"],
+	"policyType": "config",
+	"recommendation": "",
+	"rule": {
+		"children": [{
+			"criteria": "{\"category\":\"Networking\",\"resourceTypes\":[\"google_compute_firewall\"],\"conditionQuery\":{\"attribute\":\"allow.ports\",\"operator\":\"equals\",\"value\":\"22\",\"cond_type\":\"attribute\"}}",
+			"type": "build",
+			"recommendation": ""
+		}],
+		"name": "Custom GCP Policy",
+		"parameters": {
+			"savedSearch": "false",
+			"withIac": "true"
+		},
+		"type": "Config"
+	},
+	"severity": "medium"
+}
