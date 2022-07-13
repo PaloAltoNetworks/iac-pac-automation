@@ -9,6 +9,7 @@ This workflow is not ment for production use. Its goal is to provide a way to sh
 * [Requirements](#requirements)
 * [Getting Started](#getting-started)
 * [Support](#support)
+* [Contributing](#contributing)
 
 ## Requirements
 
@@ -29,3 +30,11 @@ This workflow is not ment for production use. Its goal is to provide a way to sh
 ## Support
 
 Please read [SUPPORT.md](SUPPORT.md) for details on how to get support for this project.
+
+
+## Contributing
+
+We value your contributions! Please read
+[CONTRIBUTING.md](CONTRIBUTING.md)
+for details on how to contribute, and the process for submitting pull requests
+to us. 
