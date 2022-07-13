@@ -8,6 +8,8 @@ This workflow is not ment for production use. Its goal is to provide a way to sh
 
 * [Requirements](#requirements)
 * [Getting Started](#getting-started)
+* [Support](#support)
+* [Contributing](#contributing)
 
 ## Requirements
 
@@ -24,3 +26,15 @@ This workflow is not ment for production use. Its goal is to provide a way to sh
 6. Push your changes to the main branch of the repo.
 7. Check the actions tab.
 8. In your Bridgecrew console navigate to policies, add GCP to the providers list, add "Created by" and select your username.
+
+## Support
+
+Please read [SUPPORT.md](SUPPORT.md) for details on how to get support for this project.
+
+
+## Contributing
+
+We value your contributions! Please read
+[CONTRIBUTING.md](CONTRIBUTING.md)
+for details on how to contribute, and the process for submitting pull requests
+to us. 
