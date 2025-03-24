@@ -18,7 +18,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
      
       # Install jq and yq
       - name: Install jq and yq
@@ -27,7 +27,7 @@ jobs:
       # Get modified files (https://github.com/marketplace/actions/get-all-changed-files)
       - name: Get Modified Files
         id: files_modified
-        uses: jitterbit/get-changed-files@v1
+        uses: jitterbit/get-changed-files@b17fbb00bdc0c0f63fcf166580804b4d2cdc2a42 # v1
       
       # Create policy
       - name: Create Policy
